@@ -7,7 +7,7 @@ import { LiquidNode } from './types.js'
 
 const LIQUID_BLOCK_REGEX = /{%-?.*?-?%}/gs
 const LIQUID_COMMENTS_REGEX = /{%-?\s*comment\s*-?%}[\S\s]*?{%-?\s*endcomment\s*-?%}/gi
-const LIQUID_RENDER_REGEX = /\srender\s+'([^']+)'/gs
+const LIQUID_RENDER_REGEX = /\s(?:include|render|inject)\s+'([^']+)'/gs
 const ASSET_URL_REGEX = /{{\s*'([^']+\.js)'\s*\|\s*asset_url\s*}}/g
 const SCRIPT_TAG_REGEX = /<script[^>]*>[\S\s]*?<\/script>/g
 const SCRIPT_IMPORT_REGEX = /import\s+["']([^"']+)["']/g
@@ -117,7 +117,7 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
 }
 
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
-  const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '*.liquid'), { absolute: true })
+  const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '**/*.liquid'), { absolute: true })
     .map(file => { 
       const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
       return generateLiquidNode(file, 'entry', parentFolderName)
