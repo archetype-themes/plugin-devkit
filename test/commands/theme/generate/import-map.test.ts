@@ -22,10 +22,10 @@ describe('theme generate import-map', () => {
 
   it('generates empty import map when no JS files exist', async () => {
     await runCommand(['theme:generate:import-map', testThemePath])
-    
-    const importMapPath = path.join(testThemePath, 'snippets', 'import-map.liquid')
+
+    const importMapPath = path.join(testThemePath, 'snippets', 'head.import-map.liquid')
     const content = fs.readFileSync(importMapPath, 'utf8')
-    
+
     const jsonContent = extractImportMapJson(content)
     expect(jsonContent).to.deep.equal({
       imports: {}
@@ -36,12 +36,12 @@ describe('theme generate import-map', () => {
     const assetsPath = path.join(testThemePath, 'assets')
     fs.writeFileSync(path.join(assetsPath, 'main.js'), '')
     fs.writeFileSync(path.join(assetsPath, 'utils.js'), '')
-    
+
     await runCommand(['theme:generate:import-map', testThemePath])
-    
-    const importMapPath = path.join(testThemePath, 'snippets', 'import-map.liquid')
+
+    const importMapPath = path.join(testThemePath, 'snippets', 'head.import-map.liquid')
     const content = fs.readFileSync(importMapPath, 'utf8')
-    
+
     const jsonContent = extractImportMapJson(content)
     expect(jsonContent).to.deep.equal({
       imports: {
@@ -54,12 +54,12 @@ describe('theme generate import-map', () => {
   it('does not include .min in the entry key', async () => {
     const assetsPath = path.join(testThemePath, 'assets')
     fs.writeFileSync(path.join(assetsPath, 'component.min.js'), '')
-    
+
     await runCommand(['theme:generate:import-map', testThemePath])
-    
-    const importMapPath = path.join(testThemePath, 'snippets', 'import-map.liquid')
+
+    const importMapPath = path.join(testThemePath, 'snippets', 'head.import-map.liquid')
     const content = fs.readFileSync(importMapPath, 'utf8')
-    
+
     const jsonContent = extractImportMapJson(content)
     expect(jsonContent).to.deep.equal({
       imports: {
@@ -90,12 +90,12 @@ describe('theme generate import-map', () => {
   it('updates existing import map', async () => {
     const assetsPath = path.join(testThemePath, 'assets')
     fs.writeFileSync(path.join(assetsPath, 'main.js'), '')
-    const importMapPath = path.join(testThemePath, 'snippets', 'import-map.liquid')
+    const importMapPath = path.join(testThemePath, 'snippets', 'head.import-map.liquid')
     const initialContent = `<script type="importmap">\n{\n  "imports": {}\n}\n</script>`
     fs.writeFileSync(importMapPath, initialContent)
 
     await runCommand(['theme:generate:import-map', testThemePath])
-    
+
     const content = fs.readFileSync(importMapPath, 'utf8')
     const jsonContent = extractImportMapJson(content)
     expect(jsonContent).to.deep.equal({
