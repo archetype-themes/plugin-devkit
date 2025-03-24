@@ -3,7 +3,7 @@
  *
  * - Reads all JS files in the assets directory
  * - Creates an import map object with the asset URLs
- * - Writes the import map to snippets/import-map.liquid
+ * - Writes the import map to snippets/head.import-map.liquid
  */
 
 import * as fs from 'node:fs'
@@ -50,15 +50,15 @@ export default class GenerateImportMap extends BaseCommand {
       )
     }
 
-    // Write the import map to snippets/import-map.liquid
+    // Write the import map to snippets/head.import-map.liquid
     const importMapContent = `<script type="importmap">\n${JSON.stringify(importMap, null, 2)}\n</script>`
-    const importMapPath = path.join(snippetsDir, 'import-map.liquid')
+    const importMapPath = path.join(snippetsDir, 'head.import-map.liquid')
     if (!fs.existsSync(importMapPath) || fs.readFileSync(importMapPath, 'utf8') !== importMapContent) {
       fs.writeFileSync(importMapPath, importMapContent)
     }
 
     if (!this.flags[Flags.QUIET]) {
-      this.log('Successfully generated import map at snippets/import-map.liquid')
+      this.log('Successfully generated import map at snippets/head.import-map.liquid')
     }
   }
 }
