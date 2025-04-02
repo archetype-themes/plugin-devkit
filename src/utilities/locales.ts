@@ -148,17 +148,17 @@ function extractStorefrontTranslationKeys(content: string): Set<string> {
     }
   }
 
-  // Combine with t_with_fallback translations
-  return new Set([...keys, ...extractTWithFallbackTranslationKeys(content)])
+  // Combine with utility.translate translations
+  return new Set([...keys, ...extractUtilityTranslateKeys(content)])
 }
 
-function extractTWithFallbackTranslationKeys(content: string): Set<string> {
+function extractUtilityTranslateKeys(content: string): Set<string> {
   // Find translations assigned to variables first
   const assignedTranslations = findTranslationVariables(content)
 
   // Find both direct keys and variable-based keys
-  const directKeys = extractDirectTWithFallbackTranslationKeys(content)
-  const variableKeys = extractVariableTWithFallbackTranslationKeys(content, assignedTranslations)
+  const directKeys = extractDirectUtilityTranslateKeys(content)
+  const variableKeys = extractVariableUtilityTranslateKeys(content, assignedTranslations)
 
   return new Set([...directKeys, ...variableKeys])
 }
@@ -176,9 +176,9 @@ function findTranslationVariables(content: string): Map<string, string> {
   return assignments
 }
 
-function extractDirectTWithFallbackTranslationKeys(content: string): Set<string> {
+function extractDirectUtilityTranslateKeys(content: string): Set<string> {
   const keys = new Set<string>()
-  const pattern = /render\s+["']t_with_fallback["'][^%]*key:\s*["']([^"']+)["']/g
+  const pattern = /render\s+["']utility.translate["'][^%]*key:\s*["']([^"']+)["']/g
 
   const matches = [...content.matchAll(pattern)]
   for (const match of matches) {
@@ -188,9 +188,9 @@ function extractDirectTWithFallbackTranslationKeys(content: string): Set<string>
   return keys
 }
 
-function extractVariableTWithFallbackTranslationKeys(content: string, assignedTranslations: Map<string, string>): Set<string> {
+function extractVariableUtilityTranslateKeys(content: string, assignedTranslations: Map<string, string>): Set<string> {
   const keys = new Set<string>()
-  const pattern = /render\s+["']t_with_fallback["'][^%]*t:\s*([^\s,}]+)/g
+  const pattern = /render\s+["']utility.translate["'][^%]*t:\s*([^\s,}]+)/g
 
   const matches = [...content.matchAll(pattern)]
   for (const match of matches) {
