@@ -2,7 +2,7 @@
   "actions": {
     "add_to_cart": "Add to cart"
   },
-  "t_with_fallback": {
+  "translate": {
     "direct_key": "Direct key",
     "variable_key": "Variable key"
   },
