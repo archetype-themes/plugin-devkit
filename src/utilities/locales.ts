@@ -148,6 +148,13 @@ function extractStorefrontTranslationKeys(content: string): Set<string> {
     }
   }
 
+  // Find all locale: parameters in any render call
+  const localePattern = /render\s+["'][^"']+["'][\S\s]*?locale:\s*["']([^"']+)["']/g
+  const localeMatches = [...content.matchAll(localePattern)]
+  for (const match of localeMatches) {
+    keys.add(match[1])
+  }
+
   // Combine with utility.translate translations
   return new Set([...keys, ...extractUtilityTranslateKeys(content)])
 }
