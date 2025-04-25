@@ -1,6 +1,6 @@
 {
   "name": "plugin-devkit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Devkit plugin for the Shopify CLI",
   "author": "Archetype Themes Limited Partnership",
   "license": "MIT",
