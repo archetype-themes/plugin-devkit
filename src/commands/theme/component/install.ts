@@ -17,7 +17,7 @@ import Manifest from './manifest.js'
 
 export default class Install extends BaseCommand {
   static override args = Args.getDefinitions([
-    Args.THEME_DIR,
+    Args.DEST_DIR,
     Args.COMPONENT_SELECTOR
   ])
 
@@ -39,9 +39,9 @@ export default class Install extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    await Manifest.run([this.args[Args.THEME_DIR]!])
-    await Copy.run([this.args[Args.THEME_DIR]!])
-    await Clean.run([this.args[Args.THEME_DIR]!])
-    await GenerateImportMap.run([this.args[Args.THEME_DIR]!, '--quiet'])
+    await Manifest.run([this.args[Args.DEST_DIR]!])
+    await Copy.run([this.args[Args.DEST_DIR]!])
+    await Clean.run([this.args[Args.DEST_DIR]!])
+    await GenerateImportMap.run([this.args[Args.DEST_DIR]!, '--quiet'])
   }
 }

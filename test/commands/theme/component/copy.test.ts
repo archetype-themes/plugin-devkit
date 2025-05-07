@@ -7,19 +7,23 @@ import {fileURLToPath} from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const fixturesPath = path.join(__dirname, '../../../fixtures')
 const collectionPath = path.join(__dirname, '../../../fixtures/collection')
+const collectionBPath = path.join(__dirname, '../../../fixtures/collection-b')
 const themePath = path.join(__dirname, '../../../fixtures/theme')
 const testCollectionPath = path.join(fixturesPath, 'test-collection')
+const testCollectionBPath = path.join(fixturesPath, 'test-collection-b')
 const testThemePath = path.join(fixturesPath, 'test-theme')
 
 describe('theme component copy', () => {
   beforeEach(() => {
     fs.cpSync(collectionPath, testCollectionPath, {recursive: true})
+    fs.cpSync(collectionBPath, testCollectionBPath, {recursive: true})
     fs.cpSync(themePath, testThemePath, {recursive: true})
     process.chdir(testCollectionPath)
   })
 
   afterEach(() => {
     fs.rmSync(testCollectionPath, {force: true, recursive: true})
+    fs.rmSync(testCollectionBPath, {force: true, recursive: true})
     fs.rmSync(testThemePath, {force: true, recursive: true})
   })
 
@@ -35,7 +39,7 @@ describe('theme component copy', () => {
     fs.rmSync(path.join(testThemePath, 'component.manifest.json'), {force: true})
     const {error} = await runCommand(['theme', 'component', 'copy', testThemePath])
     expect(error).to.be.instanceOf(Error)
-    expect(error?.message).to.include('Error: component.manifest.json file not found in the theme directory.')
+    expect(error?.message).to.include('Error: component.manifest.json file not found in the destination directory.')
   })
 
   it('throws an error if the version of the component collection does not match the version in the component.manifest.json file', async () => {
@@ -58,5 +62,23 @@ describe('theme component copy', () => {
     expect(fs.existsSync(path.join(testThemePath, 'assets', 'to-be-copied.js'))).to.be.true
 
     expect(fs.existsSync(path.join(testThemePath, 'snippets', 'not-to-be-copied.liquid'))).to.be.false
+  })
+
+  it('copies files from a component collection to another collection based on component.manifest.json', async () => {
+    const manifestPath = path.join(testCollectionBPath, 'component.manifest.json')
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+    manifest.collections["@archetype-themes/test-collection"].version = "1.0.1"
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+    await runCommand(['theme', 'component', 'copy', testCollectionBPath])
+
+    const componentPath = path.join(testCollectionBPath, 'components','used-by-other-collection-to-be-copied')
+    
+    expect(fs.existsSync(path.join(componentPath, 'used-by-other-collection-to-be-copied.liquid'))).to.be.true
+    expect(fs.existsSync(path.join(componentPath, 'snippets','used-by-other-collection-to-be-copied.snippet.liquid'))).to.be.true
+    expect(fs.existsSync(path.join(componentPath, 'assets','used-by-other-collection-to-be-copied.css'))).to.be.true
+    expect(fs.existsSync(path.join(componentPath, 'setup', 'sections', 'test-section.liquid'))).to.be.true
+    expect(fs.existsSync(path.join(componentPath, 'test', 'some-test-file.js'))).to.be.true
+
+    expect(fs.existsSync(path.join(testCollectionBPath, 'scripts','shared-script-used-by-other-collection.js'))).to.be.true
   })
 })
