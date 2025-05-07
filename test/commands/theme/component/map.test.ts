@@ -37,7 +37,7 @@ describe('theme component map', () => {
     expect(error?.message).to.include('Missing 1 required arg:')
   })
 
-  it('creates a component.map.json in current theme directory if it does not exist', async () => {
+  it('creates a component.manifest.json in current theme directory if it does not exist', async () => {
     // Confirm that the file does not exist
     fs.rmSync(path.join(testThemePath, 'component.manifest.json'), {force: true})
     expect(fs.existsSync(path.join(testThemePath, 'component.manifest.json'))).to.be.false

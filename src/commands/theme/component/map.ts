@@ -12,7 +12,7 @@ import Args from '../../../utilities/args.js'
 import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
 import { getLastCommitHash } from '../../../utilities/git.js'
-import { ManifestOptions, generateManifestFiles, getManifest } from '../../../utilities/manifest.js'
+import { ManifestOptions, generateManifestFileForTheme, getManifest } from '../../../utilities/manifest.js'
 import { sortObjectKeys } from '../../../utilities/objects.js'
 import { getNameFromPackageJson, getVersionFromPackageJson } from '../../../utilities/package-json.js'
 
@@ -67,7 +67,7 @@ export default class Manifest extends BaseCommand {
       ignoreOverrides
     }
 
-    const files = await generateManifestFiles(
+    const files = await generateManifestFileForTheme(
       manifest.files,
       themeDir,
       collectionDir,

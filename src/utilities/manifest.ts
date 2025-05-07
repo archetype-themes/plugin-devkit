@@ -25,7 +25,7 @@ export interface ManifestOptions {
 }
 
 // eslint-disable-next-line max-params
-export async function generateManifestFiles(
+export async function generateManifestFileForTheme(
   oldFilesMap: Manifest['files'],
   themeDir: string, 
   collectionDir: string,
