@@ -10,14 +10,15 @@
 import Args from '../../../utilities/args.js'
 import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
+import {isThemeRepo} from '../../../utilities/validate.js'
 import GenerateImportMap from '../generate/import-map.js'
 import Clean from './clean.js'
 import Copy from './copy.js'
-import Map from './map.js'
+import Manifest from './manifest.js'
 
 export default class Install extends BaseCommand {
   static override args = Args.getDefinitions([
-    Args.THEME_DIR,
+    Args.DEST_DIR,
     Args.COMPONENT_SELECTOR
   ])
 
@@ -39,9 +40,12 @@ export default class Install extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    await Map.run([this.args[Args.THEME_DIR]!])
-    await Copy.run([this.args[Args.THEME_DIR]!])
-    await Clean.run([this.args[Args.THEME_DIR]!])
-    await GenerateImportMap.run([this.args[Args.THEME_DIR]!, '--quiet'])
+    await Manifest.run([this.args[Args.DEST_DIR]!])
+    await Copy.run([this.args[Args.DEST_DIR]!])
+    await Clean.run([this.args[Args.DEST_DIR]!])
+
+    if (isThemeRepo(this.args[Args.DEST_DIR])) {
+      await GenerateImportMap.run([this.args[Args.DEST_DIR]!, '--quiet'])
+    }
   }
 }

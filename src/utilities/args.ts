@@ -1,16 +1,15 @@
 import {Args as OclifArgs} from '@oclif/core'
 import { ArgInput } from '@oclif/core/interfaces'
 import {glob} from 'glob'
-import fs from 'node:fs'
-import path from 'node:path'
 
 import logger from './logger.js'
+import {isComponentRepo, isThemeRepo} from './validate.js'
 
 export default class Args {
   [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
   static readonly COMPONENT_SELECTOR = 'componentSelector'
+  static readonly DEST_DIR = 'destDir'
   static readonly THEME_DIR = 'themeDir'
-
   constructor(args: Record<string, ArgInput<object>>) {
     Object.assign(this, args)
   }
@@ -62,20 +61,27 @@ export const argDefinitions: Record<string, any> = {
     required: false
   }),
 
+  [Args.DEST_DIR]: OclifArgs.string({
+    description: 'path to component install directory', 
+    async parse(input: string): Promise<string> {
+      logger.debug(`Parsing destination directory argument '${input}'`)
+
+      if (!isComponentRepo(input) && !isThemeRepo(input)) {
+        logger.error(new Error(`The provided path ${input} does not appear to be a valid component collection or theme repository.`), {exit: 1})
+      }
+
+      logger.debug(`Destination directory ${input} appears to be valid`)
+      return input
+    },
+    required: true
+  }),
+
   [Args.THEME_DIR]: OclifArgs.string({
     description: 'path to theme directory', 
     async parse(input: string): Promise<string> {
       logger.debug(`Parsing theme directory argument '${input}'`)
-      const requiredFolders = ['layout', 'templates', 'config']
-      let isThemeDirectory = true
 
-      for (const folder of requiredFolders) {
-        if (!fs.existsSync(path.join(input, folder))) {
-          isThemeDirectory = false
-        }
-      }
-
-      if (!isThemeDirectory) {
+      if (!isThemeRepo(input)) {
         logger.error(new Error(`The provided path ${input} does not appear to contain valid theme files.`), {exit: 1})
       }
 

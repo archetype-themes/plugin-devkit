@@ -15,10 +15,11 @@ import Flags from '../../../utilities/flags.js'
 import { getManifest } from '../../../utilities/manifest.js'
 import { getCollectionNodes } from '../../../utilities/nodes.js'
 import { getNameFromPackageJson, getVersionFromPackageJson } from '../../../utilities/package-json.js'
+import { isComponentRepo, isThemeRepo } from '../../../utilities/validate.js'
 
 export default class Copy extends BaseCommand {
   static override args = Args.getDefinitions([
-    Args.THEME_DIR
+    Args.DEST_DIR
   ])
 
   static override description = 'Copy files from a component collection into a theme'
@@ -38,38 +39,58 @@ export default class Copy extends BaseCommand {
 
   public async run(): Promise<void> {
     const currentDir = process.cwd()
-    const hasPackageJson = fs.existsSync(path.join(currentDir, 'package.json'))
-    const hasComponentsDir = fs.existsSync(path.join(currentDir, 'components'))
 
-    if (!hasPackageJson || !hasComponentsDir) {
+    if (!isComponentRepo(currentDir)) {
       this.error('Warning: Current directory does not appear to be a component collection. Expected to find package.json and components directory.')
     }
 
-    const themeDir = path.resolve(currentDir, this.args[Args.THEME_DIR])
-    const collectionName = this.flags[Flags.COLLECTION_NAME] || getNameFromPackageJson(process.cwd())
-    const collectionVersion = this.flags[Flags.COLLECTION_VERSION] || getVersionFromPackageJson(process.cwd())
+    const destinationDir = path.resolve(currentDir, this.args[Args.DEST_DIR])
+    const sourceName = this.flags[Flags.COLLECTION_NAME] || getNameFromPackageJson(process.cwd())
+    const sourceVersion = this.flags[Flags.COLLECTION_VERSION] || getVersionFromPackageJson(process.cwd())
 
-    if (!fs.existsSync(path.join(themeDir, 'component.manifest.json'))) {
-      this.error('Error: component.manifest.json file not found in the theme directory. Run "shopify theme component map" to generate a component.manifest.json file.');
+    if (!fs.existsSync(path.join(destinationDir, 'component.manifest.json'))) {
+      this.error('Error: component.manifest.json file not found in the destination directory. Run "shopify theme component map" to generate a component.manifest.json file.');
     }
 
-    const manifest = getManifest(path.join(themeDir, 'component.manifest.json'))
-    const componentNodes = await getCollectionNodes(currentDir)
+    const manifest = getManifest(path.join(destinationDir, 'component.manifest.json'))
+    const sourceNodes = await getCollectionNodes(currentDir)
 
-    if (manifest.collections[collectionName].version !== collectionVersion) {
-      this.error(`Version mismatch: Expected ${collectionVersion} but found ${manifest.collections[collectionName].version}. Run "shopify theme component map" to update the component.manifest.json file.`);
+    if (manifest.collections[sourceName].version !== sourceVersion) {
+      this.error(`Version mismatch: Expected ${sourceVersion} but found ${manifest.collections[sourceName].version}. Run "shopify theme component map" to update the component.manifest.json file.`);
     }
 
     const copyManifestFiles = (fileType: 'assets' | 'snippets') => {
       for (const [fileName, fileCollection] of Object.entries(manifest.files[fileType])) {
-        if (fileCollection === collectionName) {
-          const node = componentNodes.find(node => node.name === fileName && node.themeFolder === fileType);
-          if (node) {
-            const src = node.file;
-            const dest = path.join(themeDir, fileType, fileName);
-            copyFileIfChanged(src, dest);
+        if (fileCollection !== sourceName) continue;
+
+        const node = sourceNodes.find(node => node.name === fileName && node.themeFolder === fileType);
+
+        if (!node) continue;
+
+        if (isThemeRepo(destinationDir)) {
+          copyFileIfChanged(node.file, path.join(destinationDir, fileType, fileName)); 
+        } else if (isComponentRepo(destinationDir)) {
+          const dest = node.file.replace(currentDir, destinationDir)
+          copyFileIfChanged(node.file, dest);
+
+          if (node.type === 'component') {
+            // Copy setup and test folders if they exist
+            const setupSrcDir = path.join(path.dirname(node.file), 'setup');
+            const setupDestDir = path.join(path.dirname(dest), 'setup');
+            const testSrcDir = path.join(path.dirname(node.file), 'test');
+            const testDestDir = path.join(path.dirname(dest), 'test');
+            
+            if (fs.existsSync(setupSrcDir)) {
+              fs.mkdirSync(setupDestDir, { recursive: true });
+              fs.cpSync(setupSrcDir, setupDestDir, { recursive: true });
+            }
+  
+            if (fs.existsSync(testSrcDir)) {
+              fs.mkdirSync(testDestDir, { recursive: true }); 
+              fs.cpSync(testSrcDir, testDestDir, { recursive: true });
+            }
           }
-        }
+        }        
       }
     };
 
