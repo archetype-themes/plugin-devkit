@@ -15,6 +15,7 @@ const fixturesPath = path.join(__dirname, '../../../fixtures')
 const collectionPath = path.join(__dirname, '../../../fixtures/collection')
 const themePath = path.join(__dirname, '../../../fixtures/theme')
 const testCollectionPath = path.join(fixturesPath, 'test-collection')
+const testCollectionBPath = path.join(fixturesPath, 'test-collection-b')
 const testThemePath = path.join(fixturesPath, 'test-theme')
 
 describe('theme component install', () => {
@@ -32,6 +33,7 @@ describe('theme component install', () => {
     generateRunStub = sandbox.stub(GenerateImportMap.prototype, 'run').resolves()
 
     fs.cpSync(collectionPath, testCollectionPath, { recursive: true })
+    fs.cpSync(collectionPath, testCollectionBPath, { recursive: true })
     fs.cpSync(themePath, testThemePath, { recursive: true })
     process.chdir(testCollectionPath)
   })
@@ -39,6 +41,7 @@ describe('theme component install', () => {
   afterEach(() => {
     sandbox.restore()
     fs.rmSync(testCollectionPath, { force: true, recursive: true })
+    fs.rmSync(testCollectionBPath, { force: true, recursive: true })
     fs.rmSync(testThemePath, { force: true, recursive: true })
   })
 
@@ -57,9 +60,14 @@ describe('theme component install', () => {
     expect(cleanRunStub.calledOnce).to.be.true
   })
 
-  it('runs the theme component generate import map command', async () => {
+  it('runs the theme component generate import map command if the destination is a theme repo', async () => {
     await Install.run([testThemePath])
     expect(generateRunStub.calledOnce).to.be.true
+  })
+
+  it('does not run the theme component generate import map command if the destination is not a theme repo', async () => {
+    await Install.run([testCollectionBPath])
+    expect(generateRunStub.calledOnce).to.be.false
   })
 
   it('runs sub-commands in correct order', async () => {

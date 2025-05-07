@@ -10,6 +10,7 @@
 import Args from '../../../utilities/args.js'
 import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
+import {isThemeRepo} from '../../../utilities/validate.js'
 import GenerateImportMap from '../generate/import-map.js'
 import Clean from './clean.js'
 import Copy from './copy.js'
@@ -42,6 +43,9 @@ export default class Install extends BaseCommand {
     await Manifest.run([this.args[Args.DEST_DIR]!])
     await Copy.run([this.args[Args.DEST_DIR]!])
     await Clean.run([this.args[Args.DEST_DIR]!])
-    await GenerateImportMap.run([this.args[Args.DEST_DIR]!, '--quiet'])
+
+    if (isThemeRepo(this.args[Args.DEST_DIR])) {
+      await GenerateImportMap.run([this.args[Args.DEST_DIR]!, '--quiet'])
+    }
   }
 }
