@@ -12,13 +12,16 @@ import Args from '../../../utilities/args.js'
 import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
 import { getLastCommitHash } from '../../../utilities/git.js'
-import { ManifestOptions, generateManifestFileForTheme, getManifest } from '../../../utilities/manifest.js'
+import { ManifestOptions, generateManifestFile, getManifest } from '../../../utilities/manifest.js'
+import { getCollectionNodes, getThemeNodes } from '../../../utilities/nodes.js'
 import { sortObjectKeys } from '../../../utilities/objects.js'
 import { getNameFromPackageJson, getVersionFromPackageJson } from '../../../utilities/package-json.js'
+import { LiquidNode } from '../../../utilities/types.js'
+import { isComponentRepo, isThemeRepo } from '../../../utilities/validate.js'
 
 export default class Manifest extends BaseCommand {
   static override args = Args.getDefinitions([
-    Args.THEME_DIR,
+    Args.DEST_DIR,
     Args.COMPONENT_SELECTOR
   ])
 
@@ -42,23 +45,20 @@ export default class Manifest extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    const currentDir = process.cwd()
-    const hasPackageJson = fs.existsSync(path.join(currentDir, 'package.json'))
-    const hasComponentsDir = fs.existsSync(path.join(currentDir, 'components'))
+    const sourceDir = process.cwd()
 
-    if (!hasPackageJson || !hasComponentsDir) {
-      this.error('Warning: Current directory does not appear to be a component collection. Expected to find package.json and components directory.')
+    if (!isComponentRepo(sourceDir)) {
+      this.error('Warning: Current directory does not appear to be a component collection or theme repository. Expected to find package.json and components directory.')
     }
 
-    const themeDir = path.resolve(currentDir, this.args[Args.THEME_DIR])
-    const collectionDir = currentDir
-    const collectionName = this.flags[Flags.COLLECTION_NAME] || getNameFromPackageJson(process.cwd())
-    const collectionVersion = this.flags[Flags.COLLECTION_VERSION] || getVersionFromPackageJson(process.cwd())
+    const destinationDir = path.resolve(sourceDir, this.args[Args.DEST_DIR])
+    const sourceName = this.flags[Flags.COLLECTION_NAME] || getNameFromPackageJson(process.cwd())
+    const sourceVersion = this.flags[Flags.COLLECTION_VERSION] || getVersionFromPackageJson(process.cwd())
     const ignoreConflicts = this.flags[Flags.IGNORE_CONFLICTS]
     const ignoreOverrides = this.flags[Flags.IGNORE_OVERRIDES]
     const componentSelector = this.args[Args.COMPONENT_SELECTOR]
-
-    const manifestPath = path.join(themeDir, 'component.manifest.json')
+    
+    const manifestPath = path.join(destinationDir, 'component.manifest.json')
     const manifest = getManifest(manifestPath);
 
     const options: ManifestOptions = {
@@ -67,18 +67,34 @@ export default class Manifest extends BaseCommand {
       ignoreOverrides
     }
 
-    const files = await generateManifestFileForTheme(
+    const sourceNodes = await getCollectionNodes(sourceDir)
+
+    let destinationNodes: LiquidNode[]
+    let destinationName: string
+    
+    if (isThemeRepo(destinationDir)) {
+      destinationNodes = await getThemeNodes(destinationDir)
+      destinationName = '@theme'
+    } else if (isComponentRepo(destinationDir)) {
+      destinationNodes = await getCollectionNodes(destinationDir)
+      destinationName = '@collection'
+    } else {
+      this.error('Warning: Destination directory does not appear to be a theme repository or component collection.')
+    }
+
+    const files = await generateManifestFile(
       manifest.files,
-      themeDir,
-      collectionDir,
-      collectionName,
+      destinationNodes,
+      destinationName,
+      sourceNodes,
+      sourceName,
       options
     )
 
     manifest.files = sortObjectKeys(files)
-    manifest.collections[collectionName] = {
-      commit: getLastCommitHash(collectionDir),
-      version: collectionVersion
+    manifest.collections[sourceName] = {
+      commit: getLastCommitHash(sourceDir),
+      version: sourceVersion
     }
 
     fs.writeFileSync(manifestPath, JSON.stringify(sortObjectKeys(manifest), null, 2))

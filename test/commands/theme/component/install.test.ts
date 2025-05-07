@@ -7,7 +7,7 @@ import sinon from 'sinon'
 import Clean from '../../../../src/commands/theme/component/clean.js'
 import Copy from '../../../../src/commands/theme/component/copy.js'
 import Install from '../../../../src/commands/theme/component/install.js'
-import Map from '../../../../src/commands/theme/component/map.js'
+import Manifest from '../../../../src/commands/theme/component/manifest.js'
 import GenerateImportMap from '../../../../src/commands/theme/generate/import-map.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -19,14 +19,14 @@ const testThemePath = path.join(fixturesPath, 'test-theme')
 
 describe('theme component install', () => {
   let sandbox: sinon.SinonSandbox
-  let mapRunStub: sinon.SinonStub
+  let manifestRunStub: sinon.SinonStub
   let copyRunStub: sinon.SinonStub
   let cleanRunStub: sinon.SinonStub
   let generateRunStub: sinon.SinonStub
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
-    mapRunStub = sandbox.stub(Map.prototype, 'run').resolves()
+    manifestRunStub = sandbox.stub(Manifest.prototype, 'run').resolves()
     copyRunStub = sandbox.stub(Copy.prototype, 'run').resolves()
     cleanRunStub = sandbox.stub(Clean.prototype, 'run').resolves()
     generateRunStub = sandbox.stub(GenerateImportMap.prototype, 'run').resolves()
@@ -42,9 +42,9 @@ describe('theme component install', () => {
     fs.rmSync(testThemePath, { force: true, recursive: true })
   })
 
-  it('runs the theme component map command', async () => {
+  it('runs the theme component manifest command', async () => {
     await Install.run([testThemePath])
-    expect(mapRunStub.calledOnce).to.be.true
+    expect(manifestRunStub.calledOnce).to.be.true
   })
 
   it('runs the theme component copy command', async () => {
@@ -64,6 +64,6 @@ describe('theme component install', () => {
 
   it('runs sub-commands in correct order', async () => {
     await Install.run([testThemePath])
-    sinon.assert.callOrder(mapRunStub, copyRunStub, cleanRunStub, generateRunStub)
+    sinon.assert.callOrder(manifestRunStub, copyRunStub, cleanRunStub, generateRunStub)
   })
 })

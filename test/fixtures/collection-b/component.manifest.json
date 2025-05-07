@@ -1,0 +1,17 @@
+{
+  "collections": {
+    "@archetype-themes/test-collection": {
+      "version": "1.0.0"
+    }
+  },
+  "files": {
+    "snippets": {
+      "belongs-only-to-this-collection.liquid": "@collection",
+      "uses-component-from-other-collection.liquid": "@collection",
+      "used-by-other-collection-already-installed.liquid": "@archetype-themes/test-collection"
+    },
+    "assets": {
+      "belongs-only-to-this-collection.css": "@collection"
+    }
+  }
+}

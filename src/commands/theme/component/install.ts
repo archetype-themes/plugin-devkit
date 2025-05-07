@@ -13,7 +13,7 @@ import Flags from '../../../utilities/flags.js'
 import GenerateImportMap from '../generate/import-map.js'
 import Clean from './clean.js'
 import Copy from './copy.js'
-import Map from './map.js'
+import Manifest from './manifest.js'
 
 export default class Install extends BaseCommand {
   static override args = Args.getDefinitions([
@@ -39,7 +39,7 @@ export default class Install extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    await Map.run([this.args[Args.THEME_DIR]!])
+    await Manifest.run([this.args[Args.THEME_DIR]!])
     await Copy.run([this.args[Args.THEME_DIR]!])
     await Clean.run([this.args[Args.THEME_DIR]!])
     await GenerateImportMap.run([this.args[Args.THEME_DIR]!, '--quiet'])
