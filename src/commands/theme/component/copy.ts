@@ -13,7 +13,7 @@ import BaseCommand from '../../../utilities/base-command.js'
 import { copyFileIfChanged } from '../../../utilities/files.js';
 import Flags from '../../../utilities/flags.js'
 import { getManifest } from '../../../utilities/manifest.js'
-import { getCollectionNodes } from '../../../utilities/nodes.js'
+import { getCollectionNodes, getDuplicateFiles } from '../../../utilities/nodes.js'
 import { getNameFromPackageJson, getVersionFromPackageJson } from '../../../utilities/package-json.js'
 import { isComponentRepo, isThemeRepo } from '../../../utilities/validate.js'
 
@@ -54,6 +54,21 @@ export default class Copy extends BaseCommand {
 
     const manifest = getManifest(path.join(destinationDir, 'component.manifest.json'))
     const sourceNodes = await getCollectionNodes(currentDir)
+    const manifest = getManifest(path.join(themeDir, 'component.manifest.json'))
+    const componentNodes = await getCollectionNodes(currentDir)
+
+    const duplicates = getDuplicateFiles(componentNodes);
+
+    if (duplicates.size > 0) {
+      const message: string[] = []
+      duplicates.forEach((nodes, key) => {
+        message.push(`Warning: Found duplicate files for ${key}:`)
+        nodes.forEach(node => {
+          message.push(`  - ${node.file}`)
+        })
+      });
+      this.error(message.join('\n'))
+    }
 
     if (manifest.collections[sourceName].version !== sourceVersion) {
       this.error(`Version mismatch: Expected ${sourceVersion} but found ${manifest.collections[sourceName].version}. Run "shopify theme component map" to update the component.manifest.json file.`);

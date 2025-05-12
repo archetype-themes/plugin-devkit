@@ -357,4 +357,15 @@ describe('theme component manifest', () => {
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(data.collections['@archetype-themes/test-collection'].commit).to.equal(expectedHash)
   })
+
+  it('should throw an error if there are duplicate files in the source collection', async () => {
+    const src = path.join(testCollectionPath, 'components', 'duplicate', 'duplicate.liquid')
+    const dest = path.join(testCollectionPath, 'components', 'duplicate', 'snippets', 'duplicate.liquid')
+    
+    fs.cpSync(src, dest, {recursive: true})
+
+    const {error} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    expect(error).to.be.instanceOf(Error)
+    expect(error?.message).to.include('Error: Namespace conflict in source component collection with')
+  })
 })

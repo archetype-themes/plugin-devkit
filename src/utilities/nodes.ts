@@ -116,6 +116,26 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
   return Promise.all([...collectionSnippets, ...collectionComponents, ...collectionAssets, ...collectionScripts, ...collectionSetup])
 }
 
+export function getDuplicateFiles(nodes: LiquidNode[]): Map<string, LiquidNode[]> {
+  const duplicateMap = new Map<string, LiquidNode[]>();
+  
+  nodes.forEach(node => {
+    if (node.themeFolder !== 'snippets' && node.themeFolder !== 'assets') return;
+    const key = `${node.themeFolder}/${node.name}`;
+    if (!duplicateMap.has(key)) {
+      duplicateMap.set(key, [node]);
+    } else {
+      duplicateMap.get(key)!.push(node);
+    }
+  });
+
+  // Filter to only return entries with duplicates
+  return new Map(
+    Array.from(duplicateMap.entries())
+      .filter(([_, nodes]) => nodes.length > 1)
+  );
+}
+
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
   const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '*.liquid'), { absolute: true })
     .map(file => { 

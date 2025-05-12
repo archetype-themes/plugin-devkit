@@ -13,7 +13,7 @@ import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
 import { getLastCommitHash } from '../../../utilities/git.js'
 import { ManifestOptions, generateManifestFile, getManifest } from '../../../utilities/manifest.js'
-import { getCollectionNodes, getThemeNodes } from '../../../utilities/nodes.js'
+import { getCollectionNodes, getDuplicateFiles, getThemeNodes } from '../../../utilities/nodes.js'
 import { sortObjectKeys } from '../../../utilities/objects.js'
 import { getNameFromPackageJson, getVersionFromPackageJson } from '../../../utilities/package-json.js'
 import { LiquidNode } from '../../../utilities/types.js'
@@ -68,6 +68,19 @@ export default class Manifest extends BaseCommand {
     }
 
     const sourceNodes = await getCollectionNodes(sourceDir)
+
+    const duplicates = getDuplicateFiles(sourceNodes);
+
+    if (duplicates.size > 0) {
+      const message: string[] = []
+      duplicates.forEach((nodes, key) => {
+        message.push(`Warning: Found duplicate files for ${key}:`)
+        nodes.forEach(node => {
+          message.push(`  - ${node.file}`)
+        })
+      });
+      this.error(message.join('\n'))
+    }
 
     let destinationNodes: LiquidNode[]
     let destinationName: string
