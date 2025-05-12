@@ -14,13 +14,13 @@ import BaseCommand from '../../../utilities/base-command.js'
 import Flags from '../../../utilities/flags.js'
 export default class GenerateImportMap extends BaseCommand {
   static override args = Args.getDefinitions([
-    Args.override(Args.THEME_DIR, { default: '.', required: false })
+    Args.override(Args.DEST_DIR, { default: '.', required: false })
   ])
 
   static description = 'Generate an import map for JavaScript files in the assets directory'
 
   async run() {
-    const themeDir = path.resolve(process.cwd(), this.args[Args.THEME_DIR])
+    const themeDir = path.resolve(process.cwd(), this.args[Args.DEST_DIR])
     const assetsDir = path.join(themeDir, 'assets')
     const snippetsDir = path.join(themeDir, 'snippets')
 
