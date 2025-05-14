@@ -148,19 +148,49 @@ function extractStorefrontTranslationKeys(content: string): Set<string> {
     }
   }
 
-  // Combine with t_with_fallback translations
-  return new Set([...keys, ...extractTWithFallbackTranslationKeys(content)])
+  // Find all locale: parameters in any render call
+  const localePattern = /render\s+["'][^"']+["'][\S\s]*?locale:\s*["']([^"']+)["']/g
+  const localeMatches = [...content.matchAll(localePattern)]
+  for (const match of localeMatches) {
+    keys.add(match[1])
+  }
+
+  // Combine with utility.translate translations
+  return new Set([...keys, ...extractUtilityTranslateKeys(content)])
 }
 
-function extractTWithFallbackTranslationKeys(content: string): Set<string> {
-  // Find translations assigned to variables first
+function extractUtilityTranslateKeys(content: string): Set<string> {
+  const keys = new Set<string>()
+
+  // Find all key: parameters in utility.translate calls
+  const keyPattern = /render\s+["']utility\.translate["'][\S\s]*?key:\s*["']([^"']+)["']/g
+  const keyMatches = [...content.matchAll(keyPattern)]
+  for (const match of keyMatches) {
+    keys.add(match[1])
+  }
+
+  // Find all t: parameters with string literals
+  const tStringPattern = /render\s+["']utility\.translate["'][\S\s]*?t:\s*["']([^"']+)["']/g
+  const tStringMatches = [...content.matchAll(tStringPattern)]
+  for (const match of tStringMatches) {
+    keys.add(match[1])
+  }
+
+  // Find translations assigned to variables
   const assignedTranslations = findTranslationVariables(content)
 
-  // Find both direct keys and variable-based keys
-  const directKeys = extractDirectTWithFallbackTranslationKeys(content)
-  const variableKeys = extractVariableTWithFallbackTranslationKeys(content, assignedTranslations)
+  // Find variable-based keys in utility.translate
+  const variablePattern = /render\s+["']utility\.translate["'][\S\s]*?t:\s*(\w+)/g
+  const varMatches = [...content.matchAll(variablePattern)]
+  for (const match of varMatches) {
+    const varName = match[1]
+    const translationKey = assignedTranslations.get(varName)
+    if (translationKey) {
+      keys.add(translationKey)
+    }
+  }
 
-  return new Set([...directKeys, ...variableKeys])
+  return keys
 }
 
 function findTranslationVariables(content: string): Map<string, string> {
@@ -174,34 +204,6 @@ function findTranslationVariables(content: string): Map<string, string> {
   }
 
   return assignments
-}
-
-function extractDirectTWithFallbackTranslationKeys(content: string): Set<string> {
-  const keys = new Set<string>()
-  const pattern = /render\s+["']t_with_fallback["'][^%]*key:\s*["']([^"']+)["']/g
-
-  const matches = [...content.matchAll(pattern)]
-  for (const match of matches) {
-    keys.add(match[1])
-  }
-
-  return keys
-}
-
-function extractVariableTWithFallbackTranslationKeys(content: string, assignedTranslations: Map<string, string>): Set<string> {
-  const keys = new Set<string>()
-  const pattern = /render\s+["']t_with_fallback["'][^%]*t:\s*([^\s,}]+)/g
-
-  const matches = [...content.matchAll(pattern)]
-  for (const match of matches) {
-    const varName = match[1]
-    const translationKey = assignedTranslations.get(varName)
-    if (translationKey) {
-      keys.add(translationKey)
-    }
-  }
-
-  return keys
 }
 
 export async function removeUnreferencedTranslationsFromTheme(
