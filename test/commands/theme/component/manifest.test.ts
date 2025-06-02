@@ -1,9 +1,9 @@
-import {runCommand} from '@oclif/test'
-import {expect} from 'chai'
-import {execSync} from 'node:child_process'
+import { runCommand } from '@oclif/test'
+import { expect } from 'chai'
+import { execSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import {fileURLToPath} from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const fixturesPath = path.join(__dirname, '../../../fixtures')
@@ -15,34 +15,34 @@ const testCollectionBPath = path.join(fixturesPath, 'test-collection-b')
 const testThemePath = path.join(fixturesPath, 'test-theme')
 describe('theme component manifest', () => {
   beforeEach(() => {
-    fs.cpSync(collectionPath, testCollectionPath, {recursive: true})
-    fs.cpSync(collectionBPath, testCollectionBPath, {recursive: true})
-    fs.cpSync(themePath, testThemePath, {recursive: true})
+    fs.cpSync(collectionPath, testCollectionPath, { recursive: true })
+    fs.cpSync(collectionBPath, testCollectionBPath, { recursive: true })
+    fs.cpSync(themePath, testThemePath, { recursive: true })
     process.chdir(testCollectionPath)
   })
 
   afterEach(() => {
-    fs.rmSync(testCollectionPath, {force: true, recursive: true})
-    fs.rmSync(testCollectionBPath, {force: true, recursive: true})
-    fs.rmSync(testThemePath, {force: true, recursive: true})
+    fs.rmSync(testCollectionPath, { force: true, recursive: true })
+    fs.rmSync(testCollectionBPath, { force: true, recursive: true })
+    fs.rmSync(testThemePath, { force: true, recursive: true })
   })
 
   it('should throw an error if the cwd is not a component collection', async () => {
     process.chdir(testThemePath)
-    const {error} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    const { error } = await runCommand(['theme', 'component', 'manifest', testThemePath])
     expect(error).to.be.instanceOf(Error)
     expect(error?.message).to.include('Warning: ')
   })
 
   it('should throw an error if a theme directory is not provided', async () => {
-    const {error} = await runCommand(['theme', 'component', 'manifest'])
+    const { error } = await runCommand(['theme', 'component', 'manifest'])
     expect(error).to.be.instanceOf(Error)
     expect(error?.message).to.include('Missing 1 required arg:')
   })
 
   it('creates a component.manifest.json in current theme directory if it does not exist', async () => {
     // Confirm that the file does not exist
-    fs.rmSync(path.join(testThemePath, 'component.manifest.json'), {force: true})
+    fs.rmSync(path.join(testThemePath, 'component.manifest.json'), { force: true })
     expect(fs.existsSync(path.join(testThemePath, 'component.manifest.json'))).to.be.false
 
     await runCommand(['theme', 'component', 'manifest', testThemePath])
@@ -114,28 +114,28 @@ describe('theme component manifest', () => {
   })
 
   it('throws a warning if there is a potential conflict with an entry in the current collection', async () => {
-    const {stdout} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    const { stdout } = await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(stdout).to.include('Conflict Warning: Pre-existing file')
     expect(data.files.snippets['conflict.liquid']).to.equal('@theme')
   })
 
   it('ignores conflicts if --ignore-conflicts flag is passed', async () => {
-    const {stdout} = await runCommand(['theme', 'component', 'manifest', testThemePath, '--ignore-conflicts'])
+    const { stdout } = await runCommand(['theme', 'component', 'manifest', testThemePath, '--ignore-conflicts'])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(stdout).to.not.include('Conflict Warning: Pre-existing file')
     expect(data.files.snippets['conflict.liquid']).to.equal('@archetype-themes/test-collection')
   })
 
   it('throws a warning when an override is detected', async () => {
-    const {stdout} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    const { stdout } = await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(stdout).to.include('Override Warning:')
     expect(data.files.snippets['override.liquid']).to.equal('@theme')
   })
 
   it('overriden parent still references non-overridden child from collection', async () => {
-    const {stdout} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    const { stdout } = await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(stdout).to.include('Override Warning:')
     expect(data.files.snippets['override-parent.liquid']).to.equal('@theme')
@@ -144,7 +144,7 @@ describe('theme component manifest', () => {
   })
 
   it('ignores overrides if --ignore-overrides flag is passed', async () => {
-    const {stdout} = await runCommand(['theme', 'component', 'manifest', testThemePath, '--ignore-overrides'])
+    const { stdout } = await runCommand(['theme', 'component', 'manifest', testThemePath, '--ignore-overrides'])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(stdout).to.not.include('Override Warning:')
     expect(data.files.snippets['override.liquid']).to.equal('@archetype-themes/test-collection')
@@ -176,7 +176,7 @@ describe('theme component manifest', () => {
 
   it('persists entries from other collections or @theme if those files still exist', async () => {
     const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     // Check that referenced files are present in map
     expect(beforeData.files.snippets['theme-component.liquid']).to.equal('@theme')
     expect(beforeData.files.assets['theme-component.css']).to.equal('@theme')
@@ -230,7 +230,7 @@ describe('theme component manifest', () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath, 'new'])
 
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     // Should include the selected component and its assets
     expect(data.files.snippets['new.liquid']).to.equal('@archetype-themes/test-collection')
     expect(data.files.assets['new.css']).to.equal('@archetype-themes/test-collection')
@@ -244,7 +244,7 @@ describe('theme component manifest', () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath, 'new,parent'])
 
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     // Should include both selected components and their dependencies
     expect(data.files.snippets['new.liquid']).to.equal('@archetype-themes/test-collection')
     expect(data.files.assets['new.css']).to.equal('@archetype-themes/test-collection')
@@ -257,37 +257,37 @@ describe('theme component manifest', () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath, 'child'])
 
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     // Should not include the snippet since it's not a component
     expect(data.files.snippets['child.liquid']).to.be.undefined
   })
 
   it('should include all components when using "*" as component selector', async () => {
     const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     await runCommand(['theme', 'component', 'manifest', testThemePath, '*'])
 
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     // Should include all components from the collection
     expect(data.files.snippets['new.liquid']).to.equal('@archetype-themes/test-collection')
     expect(data.files.assets['new.css']).to.equal('@archetype-themes/test-collection')
     expect(data.files.snippets['parent.liquid']).to.equal('@archetype-themes/test-collection')
     expect(data.files.snippets['child.liquid']).to.equal('@archetype-themes/test-collection')
-    
+
     // Should still maintain other collection entries
     for (const [key, value] of Object.entries(beforeData.files.snippets)
       .filter(([_, value]) => value !== '@archetype-themes/test-collection')) {
-        if (fs.existsSync(path.join(testThemePath, 'snippets', key))) {
-          expect(data.files.snippets[key]).to.equal(value)
-        }
+      if (fs.existsSync(path.join(testThemePath, 'snippets', key))) {
+        expect(data.files.snippets[key]).to.equal(value)
       }
+    }
   })
 
   it('should throw an error when no components match the selector', async () => {
     const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
-    const {error} = await runCommand(['theme', 'component', 'manifest', testThemePath, 'non-existent'])
+
+    const { error } = await runCommand(['theme', 'component', 'manifest', testThemePath, 'non-existent'])
 
     // Should throw an error
     expect(error).to.be.instanceOf(Error)
@@ -312,21 +312,21 @@ describe('theme component manifest', () => {
   it('should detect JS imports from script tags with {{ "filename" | asset_url }} filter', async () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     expect(data.files.assets['script-with-filter.js']).to.equal('@archetype-themes/test-collection')
   })
 
   it('should detect JS imports snippets inside components', async () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     expect(data.files.assets['script-snippet-import.js']).to.equal('@archetype-themes/test-collection')
   })
 
   it('should detect JS imports from script tags with import statements', async () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     expect(data.files.assets['script-with-import.js']).to.equal('@archetype-themes/test-collection')
     expect(data.files.assets['shared-min-other.js']).to.equal('@archetype-themes/test-collection')
   })
@@ -334,7 +334,7 @@ describe('theme component manifest', () => {
   it('should not include commented out script imports', async () => {
     await runCommand(['theme', 'component', 'manifest', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    
+
     expect(data.files.assets['commented-script.js']).to.be.undefined
   })
 
@@ -345,9 +345,9 @@ describe('theme component manifest', () => {
     execSync('git config user.name "Test User"', { cwd: testCollectionPath })
     execSync('git add .', { cwd: testCollectionPath })
     execSync('git commit -m "Initial commit"', { cwd: testCollectionPath })
-    
+
     // Get the commit hash we just created
-    const expectedHash = execSync('git rev-parse HEAD', { 
+    const expectedHash = execSync('git rev-parse HEAD', {
       cwd: testCollectionPath,
       encoding: 'utf8'
     }).trim()
@@ -361,11 +361,11 @@ describe('theme component manifest', () => {
   it('should throw an error if there are duplicate files in the source collection', async () => {
     const src = path.join(testCollectionPath, 'components', 'duplicate', 'duplicate.liquid')
     const dest = path.join(testCollectionPath, 'components', 'duplicate', 'snippets', 'duplicate.liquid')
-    
-    fs.cpSync(src, dest, {recursive: true})
 
-    const {error} = await runCommand(['theme', 'component', 'manifest', testThemePath])
+    fs.cpSync(src, dest, { recursive: true })
+
+    const { error } = await runCommand(['theme', 'component', 'manifest', testThemePath])
     expect(error).to.be.instanceOf(Error)
-    expect(error?.message).to.include('Error: Namespace conflict in source component collection with')
+    expect(error?.message).to.include('Warning: Found duplicate files for')
   })
 })

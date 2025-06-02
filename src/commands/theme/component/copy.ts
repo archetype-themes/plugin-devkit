@@ -53,20 +53,19 @@ export default class Copy extends BaseCommand {
     }
 
     const manifest = getManifest(path.join(destinationDir, 'component.manifest.json'))
-    const sourceNodes = await getCollectionNodes(currentDir)
-    const manifest = getManifest(path.join(themeDir, 'component.manifest.json'))
     const componentNodes = await getCollectionNodes(currentDir)
 
     const duplicates = getDuplicateFiles(componentNodes);
 
     if (duplicates.size > 0) {
       const message: string[] = []
-      duplicates.forEach((nodes, key) => {
+      for (const [key, nodes] of duplicates) {
         message.push(`Warning: Found duplicate files for ${key}:`)
-        nodes.forEach(node => {
+        for (const node of nodes) {
           message.push(`  - ${node.file}`)
-        })
-      });
+        }
+      }
+
       this.error(message.join('\n'))
     }
 
@@ -78,12 +77,12 @@ export default class Copy extends BaseCommand {
       for (const [fileName, fileCollection] of Object.entries(manifest.files[fileType])) {
         if (fileCollection !== sourceName) continue;
 
-        const node = sourceNodes.find(node => node.name === fileName && node.themeFolder === fileType);
+        const node = componentNodes.find(node => node.name === fileName && node.themeFolder === fileType);
 
         if (!node) continue;
 
         if (isThemeRepo(destinationDir)) {
-          copyFileIfChanged(node.file, path.join(destinationDir, fileType, fileName)); 
+          copyFileIfChanged(node.file, path.join(destinationDir, fileType, fileName));
         } else if (isComponentRepo(destinationDir)) {
           const dest = node.file.replace(currentDir, destinationDir)
           copyFileIfChanged(node.file, dest);
@@ -94,18 +93,18 @@ export default class Copy extends BaseCommand {
             const setupDestDir = path.join(path.dirname(dest), 'setup');
             const testSrcDir = path.join(path.dirname(node.file), 'test');
             const testDestDir = path.join(path.dirname(dest), 'test');
-            
+
             if (fs.existsSync(setupSrcDir)) {
               fs.mkdirSync(setupDestDir, { recursive: true });
               fs.cpSync(setupSrcDir, setupDestDir, { recursive: true });
             }
-  
+
             if (fs.existsSync(testSrcDir)) {
-              fs.mkdirSync(testDestDir, { recursive: true }); 
+              fs.mkdirSync(testDestDir, { recursive: true });
               fs.cpSync(testSrcDir, testDestDir, { recursive: true });
             }
           }
-        }        
+        }
       }
     };
 

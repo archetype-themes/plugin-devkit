@@ -57,7 +57,7 @@ export default class Manifest extends BaseCommand {
     const ignoreConflicts = this.flags[Flags.IGNORE_CONFLICTS]
     const ignoreOverrides = this.flags[Flags.IGNORE_OVERRIDES]
     const componentSelector = this.args[Args.COMPONENT_SELECTOR]
-    
+
     const manifestPath = path.join(destinationDir, 'component.manifest.json')
     const manifest = getManifest(manifestPath);
 
@@ -73,18 +73,19 @@ export default class Manifest extends BaseCommand {
 
     if (duplicates.size > 0) {
       const message: string[] = []
-      duplicates.forEach((nodes, key) => {
+      for (const [key, nodes] of duplicates) {
         message.push(`Warning: Found duplicate files for ${key}:`)
-        nodes.forEach(node => {
+        for (const node of nodes) {
           message.push(`  - ${node.file}`)
-        })
-      });
+        }
+      }
+
       this.error(message.join('\n'))
     }
 
     let destinationNodes: LiquidNode[]
     let destinationName: string
-    
+
     if (isThemeRepo(destinationDir)) {
       destinationNodes = await getThemeNodes(destinationDir)
       destinationName = '@theme'
