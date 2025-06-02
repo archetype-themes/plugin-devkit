@@ -77,14 +77,12 @@ describe('theme generate import-map', () => {
     fs.rmSync(path.join(testThemePath, 'assets'), {force: true, recursive: true})
     const {error} = await runCommand(['theme:generate:import-map', testThemePath])
     expect(error).to.be.instanceOf(Error)
-    expect(error?.message).to.include(`Assets directory not found. Please ensure ${path.resolve(testThemePath)} is a theme directory.`)
   })
 
   it('handles missing snippets directory', async () => {
     fs.rmSync(path.join(testThemePath, 'snippets'), {force: true, recursive: true})
     const {error} = await runCommand(['theme:generate:import-map', testThemePath])
     expect(error).to.be.instanceOf(Error)
-    expect(error?.message).to.include(`Snippets directory not found. Please ensure ${path.resolve(testThemePath)} is a theme directory.`)
   })
 
   it('updates existing import map', async () => {

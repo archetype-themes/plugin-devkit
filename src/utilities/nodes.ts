@@ -65,7 +65,7 @@ export async function generateLiquidNode(file: string, type: LiquidNode['type'],
     assets = await getJsAssets(body)
   }
 
-  if (type === 'snippet') { 
+  if (type === 'snippet') {
     body = fs.readFileSync(file, 'utf8')
     assets = getJsImportsFromLiquid(body)
   }
@@ -116,9 +116,30 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
   return Promise.all([...collectionSnippets, ...collectionComponents, ...collectionAssets, ...collectionScripts, ...collectionSetup])
 }
 
+export function getDuplicateFiles(nodes: LiquidNode[]): Map<string, LiquidNode[]> {
+  const duplicateMap = new Map<string, LiquidNode[]>();
+
+  for (const node of nodes) {
+    if (node.themeFolder === 'snippets' || node.themeFolder === 'assets') {
+      const key = `${node.themeFolder}/${node.name}`;
+      if (duplicateMap.has(key)) {
+        duplicateMap.get(key)!.push(node);
+      } else {
+        duplicateMap.set(key, [node]);
+      }
+    }
+  }
+
+  // Filter to only return entries with duplicates
+  return new Map(
+    [...duplicateMap.entries()]
+      .filter(([_, nodes]) => nodes.length > 1)
+  );
+}
+
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
   const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '*.liquid'), { absolute: true })
-    .map(file => { 
+    .map(file => {
       const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
       return generateLiquidNode(file, 'entry', parentFolderName)
     })
