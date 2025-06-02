@@ -85,6 +85,28 @@ export function writeFileIfChanged(content: string, dest: string) {
   }
 }
 
+export function writeFileIfNotExists(filePath: string, content: string, force: boolean = false): boolean {
+  if (fs.existsSync(filePath) && !force) {
+    return false
+  }
+
+  ensureDirectoryExists(path.dirname(filePath))
+
+  if (force) {
+    fs.writeFileSync(filePath, content, 'utf8')
+  } else {
+    writeFileIfChanged(content, filePath)
+  }
+
+  return true
+}
+
+export function ensureDirectoryExists(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true })
+  }
+}
+
 export function writeJsonFile(
   filePath: string,
   content: Record<string, unknown>,
