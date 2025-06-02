@@ -31,4 +31,4 @@ export const themeComponentLogger = new Proxy({} as Logger, {
   }
 })
 
-export default themeComponentLogger 
+export default themeComponentLogger
