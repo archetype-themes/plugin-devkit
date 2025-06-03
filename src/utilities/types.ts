@@ -78,3 +78,30 @@ export interface TranslationKeysUsedInTheme {
   schema: Set<string>
   storefront: Set<string>
 }
+
+// Component generation types
+export interface ComponentParts {
+  fullName: string
+  name: string
+  type: string
+}
+
+export interface FileToCreate {
+  content: string
+  description: string
+  path: string
+}
+
+export interface GenerationContext {
+  assets: { css: boolean; inline: boolean; js: boolean }
+  component: ComponentParts
+  snippets: string[]
+}
+
+export interface DirectoryPaths {
+  assetsDir: string
+  componentDir: string
+  setupSectionsDir: string
+  setupTemplatesDir: string
+  snippetsDir: string
+}

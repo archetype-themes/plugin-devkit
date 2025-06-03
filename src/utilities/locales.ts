@@ -1,9 +1,9 @@
+import { downloadGitRepository } from '@shopify/cli-kit/node/git'
 import fs, { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 import { writeJsonFile } from './files.js'
-import { cloneTheme } from './git.js'
 import { flattenObject, unflattenObject } from './objects.js'
 import { CleanOptions, LocaleContent, LocaleDiff, LocaleOptions, SyncOptions, TranslationKeysUsedInTheme } from './types.js'
 
@@ -26,7 +26,7 @@ async function fetchRemoteLocales(url: string): Promise<LocaleContent> {
   const tempDir = mkdtempSync(path.join(tmpdir(), 'theme-locales-'))
 
   try {
-    await cloneTheme(url, tempDir)
+    await downloadGitRepository({ destination: tempDir, repoUrl: url })
     return loadLocalLocales(path.join(tempDir, 'locales'))
   } finally {
     rmSync(tempDir, { force: true, recursive: true })

@@ -65,7 +65,7 @@ export async function generateLiquidNode(file: string, type: LiquidNode['type'],
     assets = await getJsAssets(body)
   }
 
-  if (type === 'snippet') { 
+  if (type === 'snippet') {
     body = fs.readFileSync(file, 'utf8')
     assets = getJsImportsFromLiquid(body)
   }
@@ -118,7 +118,7 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
 
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
   const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '*.liquid'), { absolute: true })
-    .map(file => { 
+    .map(file => {
       const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
       return generateLiquidNode(file, 'entry', parentFolderName)
     })

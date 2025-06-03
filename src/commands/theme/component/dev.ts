@@ -7,6 +7,7 @@
  * - Runs 'shopify theme dev' on the temporary development directory to preview your work
  */
 
+import { downloadGitRepository } from '@shopify/cli-kit/node/git'
 import chokidar from 'chokidar'
 import path from 'node:path'
 import { URL } from 'node:url'
@@ -15,7 +16,6 @@ import Args from '../../../utilities/args.js'
 import BaseCommand from '../../../utilities/base-command.js'
 import { cleanDir, syncFiles } from '../../../utilities/files.js'
 import Flags from '../../../utilities/flags.js'
-import { cloneTheme } from '../../../utilities/git.js'
 import { copySetupComponentFiles } from '../../../utilities/setup.js'
 import GenerateTemplateMap from '../generate/template-map.js'
 import Install from './install.js'
@@ -80,7 +80,7 @@ export default class Dev extends BaseCommand {
     // Get theme directory
     const themeDir = await this.getThemeDirectory(devDir)
 
-    this.log(`Building theme in ${devDir}...`)
+    this.log(`Building theme...`)
 
     const buildThemeParams: BuildThemeParams = {
       componentSelector,
@@ -158,7 +158,7 @@ export default class Dev extends BaseCommand {
       if (host === 'github.com' || host.endsWith('.github.com')) {
         const themeDir = path.join(devDir, '.repo')
         this.log(`Cloning theme from ${this.flags[Flags.THEME_DIR]} into dev directory ${devDir}`)
-        await cloneTheme(this.flags[Flags.THEME_DIR], themeDir)
+        await downloadGitRepository({ destination: themeDir, repoUrl: this.flags[Flags.THEME_DIR] })
         return themeDir
       }
 

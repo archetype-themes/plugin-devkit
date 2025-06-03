@@ -5,11 +5,15 @@ import { ComponentConfig } from './types.js'
 
 export default class Flags {
   [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  static readonly ASSET_TYPES = 'asset-types';
+  static readonly ASSETS = 'assets';
   static readonly CLEAN = 'clean';
   static readonly COLLECTION_NAME = 'collection-name';
   static readonly COLLECTION_PACKAGE_JSON = 'collection-package-json';
   static readonly COLLECTION_VERSION = 'collection-version';
   static readonly ENVIRONMENT = 'environment';
+  static readonly FILES = 'files';
+  static readonly FORCE = 'force';
   static readonly FORMAT = 'format';
   static readonly GENERATE_IMPORT_MAP = 'generate-import-map';
   static readonly GENERATE_TEMPLATE_MAP = 'generate-template-map';
@@ -23,12 +27,15 @@ export default class Flags {
   static readonly PORT = 'port';
   static readonly PREVIEW = 'preview';
   static readonly QUIET = 'quiet';
+  static readonly SETUP = 'setup';
   static readonly SETUP_FILES = 'setup-files';
+  static readonly SNIPPETS = 'snippets';
   static readonly STORE = 'store';
   static readonly STORE_PASSWORD = 'store-password';
   static readonly TARGET = 'target';
   static readonly THEME = 'theme';
   static readonly THEME_DIR = 'theme-dir';
+  static readonly TYPE = 'type';
   static readonly WATCH = 'watch';
 
   private flagValues: Record<string, FlagInput<object>>;
@@ -50,6 +57,18 @@ export default class Flags {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const flagDefinitions: Record<string, any> = {
+  [Flags.ASSET_TYPES]: OclifFlags.string({
+    description: "The asset types to generate: 'css', 'js', or 'css,js' (defaults to both)",
+    helpValue: '[css|js|css,js]',
+    required: false,
+  }),
+
+  [Flags.ASSETS]: OclifFlags.boolean({
+    char: 'a',
+    default: false,
+    description: "Generate CSS and JS assets. Defaults to inline references in the component's Liquid file inside {% stylesheet %} and {% javascript %} tags",
+  }),
+
   [Flags.CLEAN]: OclifFlags.boolean({
     char: 'c',
     default: false,
@@ -68,6 +87,17 @@ export const flagDefinitions: Record<string, any> = {
 
   [Flags.ENVIRONMENT]: OclifFlags.string({
     description: 'The environment to apply to the current command.',
+  }),
+
+  [Flags.FILES]: OclifFlags.boolean({
+    char: 'f',
+    default: false,
+    description: "Create separate CSS and JS files instead of inline references in the component's Liquid file",
+  }),
+
+  [Flags.FORCE]: OclifFlags.boolean({
+    default: false,
+    description: 'Overwrite existing files if they exist',
   }),
 
   [Flags.FORMAT]: OclifFlags.boolean({
@@ -145,11 +175,22 @@ export const flagDefinitions: Record<string, any> = {
     description: 'Suppress non-essential output',
   }),
 
+  [Flags.SETUP]: OclifFlags.boolean({
+    char: 's',
+    default: false,
+    description: 'Generate section and template files to preview component in component explorer',
+  }),
+
   [Flags.SETUP_FILES]: OclifFlags.boolean({
     allowNo: true,
     char: 's',
     default: true,
     description: 'Copy setup files to theme directory',
+  }),
+
+  [Flags.SNIPPETS]: OclifFlags.string({
+    description: 'Generate component snippets (e.g., "body,heading,rte")',
+    multiple: true,
   }),
 
   [Flags.STORE]: OclifFlags.string({
@@ -177,6 +218,11 @@ export const flagDefinitions: Record<string, any> = {
     char: 't',
     default: 'https://github.com/archetype-themes/explorer',
     description: 'Directory that contains theme files for development',
+  }),
+
+  [Flags.TYPE]: OclifFlags.string({
+    char: 't',
+    description: 'Component type (e.g., block, element, section, my-custom-type)',
   }),
 
   [Flags.WATCH]: OclifFlags.boolean({
