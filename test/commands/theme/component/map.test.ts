@@ -96,6 +96,18 @@ describe('theme component map', () => {
     expect(data.files.snippets['child.liquid']).to.equal('@archetype-themes/test-collection')
   })
 
+  it('adds entries for blocks', async () => {
+    const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
+    expect(beforeData.files.snippets['section-with-block-snippet.liquid']).to.be.undefined
+    expect(beforeData.files.snippets['section-with-block-snippet.block.liquid']).to.be.undefined
+
+    await runCommand(['theme', 'component', 'map', testThemePath])
+
+    const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
+    expect(data.files.snippets['section-with-block-snippet.liquid']).to.equal('@archetype-themes/test-collection')
+    expect(data.files.snippets['section-with-block-snippet.block.liquid']).to.equal('@archetype-themes/test-collection')
+  })
+
   it('throws a warning if there is a potential conflict with an entry in the current collection', async () => {
     const {stdout} = await runCommand(['theme', 'component', 'map', testThemePath])
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
