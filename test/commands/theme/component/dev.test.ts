@@ -37,6 +37,8 @@ describe('theme component dev', () => {
     await runCommand(['theme', 'component', 'dev', '-t', testThemePath])
     expect(fs.existsSync(path.join(testCollectionPath, '.dev', 'sections', 'with-setup.liquid'))).to.be.true
     expect(fs.existsSync(path.join(testCollectionPath, '.dev', 'templates', 'index.with-setup.liquid'))).to.be.true
+    expect(fs.existsSync(path.join(testCollectionPath, '.dev', 'blocks', 'with-setup.liquid'))).to.be.true
+    expect(fs.existsSync(path.join(testCollectionPath, '.dev', 'blocks', '_with-setup.liquid'))).to.be.true
   })
 
   it('merges the settings_schema.json setup files', async () => {
