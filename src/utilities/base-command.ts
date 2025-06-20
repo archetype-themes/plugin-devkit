@@ -1,4 +1,4 @@
-import {Command} from '@oclif/core'
+import { Command } from '@oclif/core'
 
 import Args from './args.js'
 import Flags from './flags.js'
@@ -11,7 +11,7 @@ export default abstract class BaseCommand extends Command {
   static override flags = Flags.getDefinitions([
     Flags.QUIET
   ])
-  
+
   protected async init(cmdClass: typeof BaseCommand = this.constructor as typeof BaseCommand): Promise<void> {
     await super.init()
 
@@ -19,8 +19,8 @@ export default abstract class BaseCommand extends Command {
     initializeLogger(this)
 
     this.debug('Parsing arguments and flags')
-    const {args, flags} = await this.parse(cmdClass)
+    const { args, flags } = await this.parse(cmdClass)
     this.flags = new Flags(flags)
     this.args = new Args(args)
   }
-} 
+}

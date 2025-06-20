@@ -7,9 +7,11 @@
     "strict": true,
     "target": "es2022",
     "moduleResolution": "node16",
-    "types": ["node", "mocha"]
+    "types": ["node", "mocha"],
+    "skipLibCheck": true
   },
   "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
     "esm": true
   }

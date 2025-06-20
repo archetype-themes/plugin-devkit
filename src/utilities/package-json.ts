@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export function getNameFromPackageJson(dir: string): string|undefined {
+export function getNameFromPackageJson(dir: string): string | undefined {
   const pkgPath = path.join(dir, 'package.json');
   let name;
   if (fs.existsSync(pkgPath)) {
@@ -12,7 +12,7 @@ export function getNameFromPackageJson(dir: string): string|undefined {
   return name;
 }
 
-export function getVersionFromPackageJson(dir: string): string|undefined {
+export function getVersionFromPackageJson(dir: string): string | undefined {
   const pkgPath = path.join(dir, 'package.json');
   let version;
   if (fs.existsSync(pkgPath)) {

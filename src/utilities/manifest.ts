@@ -27,7 +27,7 @@ export interface ManifestOptions {
 // eslint-disable-next-line max-params
 export async function generateManifestFiles(
   oldFilesMap: Manifest['files'],
-  themeDir: string, 
+  themeDir: string,
   collectionDir: string,
   collectionName: string,
   options: ManifestOptions
@@ -43,14 +43,14 @@ export async function generateManifestFiles(
 
   // Track collection nodes that are selected or children of selected components
   const selectedCollectionNodes = new Set<LiquidNode>()
-  
+
   function addNodeAndChildren(nodeName: string, visited = new Set<string>()) {
     if (visited.has(nodeName)) return // Prevent infinite recursion
     visited.add(nodeName)
 
     const node = collectionNodes.find(n => n.name === nodeName)
     if (!node) return
-    
+
     selectedCollectionNodes.add(node)
 
     // Add all child snippets and recursively check their children
@@ -89,22 +89,22 @@ export async function generateManifestFiles(
     // Add theme nodes not present in the old import map
     // They have been added manually by the user since the last time the import map was generated
     if ((node.type === 'snippet' || node.type === 'asset') && !oldFilesMap[node.themeFolder]?.[node.name]) {
-        const collectionNode = collectionNodes.find(n => n.themeFolder === node.themeFolder && n.name === node.name)
+      const collectionNode = collectionNodes.find(n => n.themeFolder === node.themeFolder && n.name === node.name)
 
-        if (collectionNode) {
-          if (options.ignoreConflicts) {
-            // If the user has passed the --ignore-conflicts flag, skip the node so it can be logged later as a component entry
-            continue;
-          } else {
-            // If the node also exists in the collection, warn the user of the potential conflict but keep as a @theme entry
-            newFilesMap[node.themeFolder][node.name] = '@theme'
-            logger.log(`Conflict Warning: Pre-existing file ${node.themeFolder}/${node.name} without mapping conflicts with file in ${collectionName}. Keeping the theme file.`)
-          }
+      if (collectionNode) {
+        if (options.ignoreConflicts) {
+          // If the user has passed the --ignore-conflicts flag, skip the node so it can be logged later as a component entry
+          continue;
         } else {
-          // If the node does not exist in the collection, add it to the new import map as a @theme entry
+          // If the node also exists in the collection, warn the user of the potential conflict but keep as a @theme entry
           newFilesMap[node.themeFolder][node.name] = '@theme'
+          logger.log(`Conflict Warning: Pre-existing file ${node.themeFolder}/${node.name} without mapping conflicts with file in ${collectionName}. Keeping the theme file.`)
         }
+      } else {
+        // If the node does not exist in the collection, add it to the new import map as a @theme entry
+        newFilesMap[node.themeFolder][node.name] = '@theme'
       }
+    }
 
     // Persist prexisting asset entries from @theme or other collections
     if (node.type === 'asset') {
@@ -155,7 +155,7 @@ export async function generateManifestFiles(
       if (options.componentSelector && options.componentSelector !== '*' && ![...selectedCollectionNodes].some(node => node.name === name)) {
         return
       }
-      
+
       // If the import map value is set our collection or undefined
       const node = collectionNodes.find(node => node.themeFolder === themeFolder && node.name === name)
       if (node) {
