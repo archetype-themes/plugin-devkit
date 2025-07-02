@@ -1,3 +1,4 @@
+import * as fs from 'node:fs'
 import path from 'node:path'
 
 import { copyFileIfChanged, writeFileIfChanged } from './files.js'
@@ -7,8 +8,8 @@ import { DeepObject, deepMerge } from './objects.js'
 import { LiquidNode } from './types.js'
 
 export async function copySetupComponentFiles(
-  collectionDir: string, 
-  destination: string, 
+  collectionDir: string,
+  destination: string,
   componentSelector: string
 ): Promise<void> {
   const collectionNodes = await getCollectionNodes(collectionDir)
@@ -18,6 +19,8 @@ export async function copySetupComponentFiles(
 
   const settingsSchema: object[] = []
   const settingsData: DeepObject = {}
+  let hasSchemaFiles = false
+  let hasDataFiles = false
 
   // Process all files in parallel
   await Promise.all(setupFiles.map(async (setupFile) => {
@@ -27,29 +30,48 @@ export async function copySetupComponentFiles(
     if (node.name === 'settings_schema.json') {
       const schemaItems = await processSettingsSchema(setupFile, node)
       settingsSchema.push(...schemaItems)
+      hasSchemaFiles = true
     } else if (node.name === 'settings_data.json') {
       const dataItems = await processSettingsData(setupFile, node)
       deepMerge(settingsData, dataItems)
+      hasDataFiles = true
     } else {
       copyFileIfChanged(node.file, path.join(destination, node.themeFolder, node.name))
     }
   }))
 
-  // Write combined settings schema
-  writeFileIfChanged(
-    JSON.stringify(settingsSchema), 
-    path.join(destination, 'config', 'settings_schema.json')
-  )
+  // Only write combined settings files if we found setup files for them
+  if (hasSchemaFiles) {
+    writeFileIfChanged(
+      JSON.stringify(settingsSchema, null, 2),
+      path.join(destination, 'config', 'settings_schema.json')
+    )
+  } else {
+    // If no schema files found, copy existing file from theme if it exists
+    const existingSchemaPath = path.join(destination, 'config', 'settings_schema.json')
+    if (!fs.existsSync(existingSchemaPath)) {
+      // Only create an empty schema file if none exists
+      writeFileIfChanged('[]', existingSchemaPath)
+    }
+  }
 
-  // Write combined settings data
-  writeFileIfChanged(
-    JSON.stringify(settingsData),
-    path.join(destination, 'config', 'settings_data.json')
-  )
+  if (hasDataFiles) {
+    writeFileIfChanged(
+      JSON.stringify(settingsData, null, 2),
+      path.join(destination, 'config', 'settings_data.json')
+    )
+  } else {
+    // If no data files found, copy existing file from theme if it exists
+    const existingDataPath = path.join(destination, 'config', 'settings_data.json')
+    if (!fs.existsSync(existingDataPath)) {
+      // Only create an empty data file if none exists
+      writeFileIfChanged('{}', existingDataPath)
+    }
+  }
 }
 
 export async function processSettingsSchema(
-  setupFile: string, 
+  setupFile: string,
   node: LiquidNode
 ): Promise<object[]> {
   if (node?.name !== 'settings_schema.json') {
