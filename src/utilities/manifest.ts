@@ -1,3 +1,4 @@
+import { jsonc } from 'jsonc'
 import * as fs from 'node:fs'
 
 import logger from './logger.js'
@@ -9,7 +10,7 @@ export function getManifest(path: string): Manifest {
 
   if (fs.existsSync(path)) {
     const manifestContent = fs.readFileSync(path, 'utf8')
-    const parsedContent = JSON.parse(manifestContent)
+    const parsedContent = jsonc.parse(manifestContent, { stripComments: true })
     data.collections = parsedContent.collections || {}
     data.files.assets = parsedContent.files?.assets || {}
     data.files.snippets = parsedContent.files?.snippets || {}

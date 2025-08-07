@@ -1,3 +1,4 @@
+import { jsonc } from 'jsonc'
 import path from 'node:path'
 
 import { copyFileIfChanged, writeFileIfChanged } from './files.js'
@@ -57,7 +58,7 @@ export async function processSettingsSchema(
   }
 
   try {
-    const schema = JSON.parse(node.body)
+    const schema = jsonc.parse(node.body, { stripComments: true })
     if (!Array.isArray(schema)) {
       logger.warn(`Invalid schema format in ${setupFile}: Expected an array`)
       return []
@@ -79,7 +80,7 @@ export async function processSettingsData(
   }
 
   try {
-    const data = JSON.parse(node.body)
+    const data = jsonc.parse(node.body, { stripComments: true })
     if (typeof data !== 'object' || data === null) {
       logger.warn(`Invalid settings data format in ${setupFile}: Expected an object`)
       return {}

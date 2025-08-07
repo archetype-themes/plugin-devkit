@@ -1,3 +1,4 @@
+import { jsonc } from 'jsonc'
 import fs, { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -9,6 +10,8 @@ import { CleanOptions, LocaleContent, LocaleDiff, LocaleOptions, SyncOptions, Tr
 
 const SCHEMA_DIRS = ['config', 'blocks', 'sections'] as const
 const STOREFRONT_DIRS = ['blocks', 'layout', 'sections', 'snippets', 'templates'] as const
+
+
 
 export async function getLocalesSource(source: string): Promise<LocaleContent> {
   if (isUrl(source)) {
@@ -45,7 +48,8 @@ function loadLocalLocales(dir: string): LocaleContent {
     const filePath = path.join(dir, file)
 
     try {
-      content[file] = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+      const fileContent = fs.readFileSync(filePath, 'utf8')
+      content[file] = jsonc.parse(fileContent, { stripComments: true }) as Record<string, unknown>
     } catch (error) {
       throw new Error(`Failed to parse JSON file ${file}: ${error instanceof Error ? error.message : String(error)}`)
     }
@@ -267,7 +271,8 @@ export async function removeUnreferencedStorefrontTranslations(themeDir: string,
 function removeUnreferencedKeysFromFile(filePath: string, usedKeys: Set<string>, options?: LocaleOptions): void {
   if (!fs.existsSync(filePath)) return
 
-  const content = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+  const fileContent = fs.readFileSync(filePath, 'utf8')
+  const content = jsonc.parse(fileContent, { stripComments: true }) as Record<string, unknown>
   if (!content || typeof content !== 'object') return
 
   const flattenedContent = flattenObject(content)
@@ -330,7 +335,8 @@ export async function mergeLocaleFiles(
       continue
     }
 
-    const targetContent = JSON.parse(fs.readFileSync(targetPath, 'utf8'))
+    const targetFileContent = fs.readFileSync(targetPath, 'utf8')
+    const targetContent = jsonc.parse(targetFileContent, { stripComments: true }) as Record<string, unknown>
     const diff = compareLocales(sourceContent, targetContent)
 
     const mergedContent = mode === 'replace-existing'
