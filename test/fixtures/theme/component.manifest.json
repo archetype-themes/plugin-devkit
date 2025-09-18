@@ -14,7 +14,9 @@
       "override.liquid": "@theme",
       "override-parent.liquid": "@theme",
       "to-be-copied.liquid": "@archetype-themes/test-collection",
-      "to-be-copied-snippet.liquid": "@archetype-themes/test-collection"
+      "to-be-copied-snippet.liquid": "@archetype-themes/test-collection",
+      "existing-subfolder.liquid": "@theme",
+      "removed-subfolder.liquid": "@theme"
     },
     "assets": {
       "other-collection-component.css": "@other/collection",

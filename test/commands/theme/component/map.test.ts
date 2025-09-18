@@ -63,6 +63,7 @@ describe('theme component map', () => {
     const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(beforeData.files.assets['missing.css']).to.be.undefined
     expect(beforeData.files.snippets['missing.liquid']).to.be.undefined
+    expect(beforeData.files.snippets['missing-subfolder.liquid']).to.be.undefined
 
     await runCommand(['theme', 'component', 'map', testThemePath])
 
@@ -70,6 +71,7 @@ describe('theme component map', () => {
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(data.files.assets['missing.css']).to.equal('@theme')
     expect(data.files.snippets['missing.liquid']).to.equal('@theme')
+    expect(data.files.snippets['missing-subfolder.liquid']).to.equal('@theme')
   })
 
   it('adds entries for newly referenced components from current collection', async () => {
@@ -177,12 +179,14 @@ describe('theme component map', () => {
     expect(beforeData.files.assets['theme-component.css']).to.equal('@theme')
     expect(beforeData.files.snippets['other-collection-component.liquid']).to.equal('@other/collection')
     expect(beforeData.files.assets['other-collection-component.css']).to.equal('@other/collection')
+    expect(beforeData.files.snippets['existing-subfolder.liquid']).to.equal('@theme')
 
     // Check that removed files are present in map
     expect(beforeData.files.snippets['theme-component-removed.liquid']).to.equal('@theme')
     expect(beforeData.files.assets['theme-component-removed.css']).to.equal('@theme')
     expect(beforeData.files.snippets['other-collection-component-removed.liquid']).to.equal('@other/collection')
     expect(beforeData.files.assets['other-collection-component-removed.css']).to.equal('@other/collection')
+    expect(beforeData.files.snippets['removed-subfolder.liquid']).to.equal('@theme')
 
     await runCommand(['theme', 'component', 'map', testThemePath])
 
@@ -193,12 +197,14 @@ describe('theme component map', () => {
     expect(data.files.assets['theme-component.css']).to.equal('@theme')
     expect(data.files.snippets['other-collection-component.liquid']).to.equal('@other/collection')
     expect(data.files.assets['other-collection-component.css']).to.equal('@other/collection')
+    expect(data.files.snippets['existing-subfolder.liquid']).to.equal('@theme')
 
     // Check that removed files are no longer present in map
     expect(data.files.snippets['theme-component-removed.liquid']).to.be.undefined
     expect(data.files.assets['theme-component-removed.css']).to.be.undefined
     expect(data.files.snippets['other-collection-component-removed.liquid']).to.be.undefined
     expect(data.files.assets['other-collection-component-removed.css']).to.be.undefined
+    expect(data.files.snippets['removed-subfolder.liquid']).to.be.undefined
   })
 
   it('sorts the files and collections keys in the component.map.json file', async () => {

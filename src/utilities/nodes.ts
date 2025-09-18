@@ -79,11 +79,14 @@ export async function generateLiquidNode(file: string, type: LiquidNode['type'],
       .filter(file => !fs.statSync(file).isDirectory())
   }
 
+  // For theme snippets, use just the filename (flatten subfolder structure)
+  const name = path.basename(file)
+
   return {
     assets,
     body,
     file,
-    name: path.basename(file),
+    name,
     setup,
     snippets,
     themeFolder,
@@ -122,7 +125,7 @@ export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
       const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
       return generateLiquidNode(file, 'entry', parentFolderName)
     })
-  const themeSnippets = globSync(path.join(themeDir, 'snippets', '*.liquid'), { absolute: true })
+  const themeSnippets = globSync(path.join(themeDir, 'snippets', '**/*.liquid'), { absolute: true })
     .map(file => generateLiquidNode(file, 'snippet', 'snippets'))
   const themeAssets = globSync(path.join(themeDir, 'assets', '*'), { absolute: true })
     .map(file => generateLiquidNode(file, 'asset', 'assets'))
