@@ -120,7 +120,7 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
 }
 
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
-  const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '*.liquid'), { absolute: true })
+  const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '**/*.liquid'), { absolute: true })
     .map(file => { 
       const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
       return generateLiquidNode(file, 'entry', parentFolderName)
