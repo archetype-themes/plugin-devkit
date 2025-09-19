@@ -7,7 +7,7 @@ import { LiquidNode } from './types.js'
 
 const LIQUID_BLOCK_REGEX = /{%-?.*?-?%}/gs
 const LIQUID_COMMENTS_REGEX = /{%-?\s*comment\s*-?%}[\S\s]*?{%-?\s*endcomment\s*-?%}/gi
-const LIQUID_RENDER_REGEX = /\srender\s+'([^']+)'/gs
+const LIQUID_RENDER_REGEX = /\s(?:render|include)\s+'([^']+)'/gs
 const ASSET_URL_REGEX = /{{\s*'([^']+\.js)'\s*\|\s*asset_url\s*}}/g
 const SCRIPT_TAG_REGEX = /<script[^>]*>[\S\s]*?<\/script>/g
 const SCRIPT_IMPORT_REGEX = /import\s+["']([^"']+)["']/g
@@ -119,10 +119,27 @@ export async function getCollectionNodes(collectionDir: string): Promise<LiquidN
   return Promise.all([...collectionSnippets, ...collectionComponents, ...collectionAssets, ...collectionScripts, ...collectionSetup])
 }
 
+function findThemeFolder(file: string, themeDir: string): LiquidNode['themeFolder'] {
+  const themeFolders = new Set<LiquidNode['themeFolder']>(['layout', 'sections', 'blocks', 'templates'])
+  let currentDir = path.dirname(file)
+  
+  while (currentDir !== themeDir && currentDir !== path.dirname(themeDir)) {
+    const folderName = path.basename(currentDir)
+    if (themeFolders.has(folderName as LiquidNode['themeFolder'])) {
+      return folderName as LiquidNode['themeFolder']
+    }
+
+    currentDir = path.dirname(currentDir)
+  }
+  
+  // Fallback to the immediate parent directory if no theme folder is found
+  return path.basename(path.dirname(file)) as LiquidNode['themeFolder']
+}
+
 export async function getThemeNodes(themeDir: string): Promise<LiquidNode[]> {
   const entryNodes = globSync(path.join(themeDir, '{layout,sections,blocks,templates}', '**/*.liquid'), { absolute: true })
     .map(file => { 
-      const parentFolderName = path.basename(path.dirname(file)) as LiquidNode['themeFolder']
+      const parentFolderName = findThemeFolder(file, themeDir)
       return generateLiquidNode(file, 'entry', parentFolderName)
     })
   const themeSnippets = globSync(path.join(themeDir, 'snippets', '**/*.liquid'), { absolute: true })
