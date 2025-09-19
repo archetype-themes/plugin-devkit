@@ -64,14 +64,16 @@ describe('theme component map', () => {
     expect(beforeData.files.assets['missing.css']).to.be.undefined
     expect(beforeData.files.snippets['missing.liquid']).to.be.undefined
     expect(beforeData.files.snippets['missing-subfolder.liquid']).to.be.undefined
+    expect(beforeData.files.snippets['include-tag.liquid']).to.be.undefined
 
     await runCommand(['theme', 'component', 'map', testThemePath])
 
     // Check that missing entries are present in map
     const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
-    expect(data.files.assets['missing.css']).to.equal('@theme')
-    expect(data.files.snippets['missing.liquid']).to.equal('@theme')
-    expect(data.files.snippets['missing-subfolder.liquid']).to.equal('@theme')
+    expect(data.files.assets['missing.css']).to.equal('@theme') // Should work with assets
+    expect(data.files.snippets['missing.liquid']).to.equal('@theme') // Should work with render tag
+    expect(data.files.snippets['missing-subfolder.liquid']).to.equal('@theme') // Should work with subfolders
+    expect(data.files.snippets['include-tag.liquid']).to.equal('@theme') // Should work with include tag
   })
 
   it('adds entries for newly referenced components from current collection', async () => {
