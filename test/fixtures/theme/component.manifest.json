@@ -16,7 +16,9 @@
       "to-be-copied.liquid": "@archetype-themes/test-collection",
       "to-be-copied-snippet.liquid": "@archetype-themes/test-collection",
       "existing-subfolder.liquid": "@theme",
-      "removed-subfolder.liquid": "@theme"
+      "removed-subfolder.liquid": "@theme",
+      "unreferenced-theme-snippet.liquid": "@theme",
+      "unreferenced-other-collection-snippet.liquid": "@other/collection"
     },
     "assets": {
       "other-collection-component.css": "@other/collection",

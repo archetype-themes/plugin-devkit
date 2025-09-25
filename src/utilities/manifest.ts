@@ -86,36 +86,6 @@ export async function generateManifestFiles(
     }
   }
 
-  for (const node of themeNodes) {
-    // Add theme nodes not present in the old import map
-    // They have been added manually by the user since the last time the import map was generated
-    if ((node.type === 'snippet' || node.type === 'asset') && !oldFilesMap[node.themeFolder]?.[node.name]) {
-        const collectionNode = collectionNodes.find(n => n.themeFolder === node.themeFolder && n.name === node.name)
-
-        if (collectionNode) {
-          if (options.ignoreConflicts) {
-            // If the user has passed the --ignore-conflicts flag, skip the node so it can be logged later as a component entry
-            continue;
-          } else {
-            // If the node also exists in the collection, warn the user of the potential conflict but keep as a @theme entry
-            newFilesMap[node.themeFolder][node.name] = '@theme'
-            logger.log(`Conflict Warning: Pre-existing file ${node.themeFolder}/${node.name} without mapping conflicts with file in ${collectionName}. Keeping the theme file.`)
-          }
-        } else {
-          // If the node does not exist in the collection, add it to the new import map as a @theme entry
-          newFilesMap[node.themeFolder][node.name] = '@theme'
-        }
-      }
-
-    // Persist prexisting asset entries from @theme or other collections
-    if (node.type === 'asset') {
-      const oldImportMapValue = oldFilesMap[node.themeFolder]?.[node.name]
-      if (oldImportMapValue !== collectionName && typeof oldImportMapValue === 'string') {
-        newFilesMap[node.themeFolder][node.name] = oldImportMapValue
-      }
-    }
-  }
-
   function addFilesMapEntry(themeFolder: LiquidNode['themeFolder'], name: string) {
     const oldImportMapValue = oldFilesMap[themeFolder]?.[name]
     const newImportMapValue = newFilesMap[themeFolder]?.[name]
@@ -181,6 +151,45 @@ export async function generateManifestFiles(
   for (const node of entryPointNodes) {
     for (const snippet of node.snippets) {
       addFilesMapEntry('snippets', snippet)
+    }
+  }
+
+  for (const node of themeNodes) {
+    // Add theme nodes not present in the old import map
+    // They have been added manually by the user since the last time the import map was generated
+    if ((node.type === 'snippet' || node.type === 'asset') && !oldFilesMap[node.themeFolder]?.[node.name]) {
+        const collectionNode = collectionNodes.find(n => n.themeFolder === node.themeFolder && n.name === node.name)
+
+        if (collectionNode) {
+          if (options.ignoreConflicts) {
+            // If the user has passed the --ignore-conflicts flag, skip the node so it can be logged later as a component entry
+            continue;
+          } else {
+            // If the node also exists in the collection, warn the user of the potential conflict but keep as a @theme entry
+            newFilesMap[node.themeFolder][node.name] = '@theme'
+            logger.log(`Conflict Warning: Pre-existing file ${node.themeFolder}/${node.name} without mapping conflicts with file in ${collectionName}. Keeping the theme file.`)
+          }
+        } else {
+          // If the node does not exist in the collection, add it to the new import map as a @theme entry
+          newFilesMap[node.themeFolder][node.name] = '@theme'
+        }
+      }
+
+    // Persist prexisting asset entries from @theme or other collections
+    if (node.type === 'asset') {
+      const oldImportMapValue = oldFilesMap[node.themeFolder]?.[node.name]
+      if (oldImportMapValue !== collectionName && typeof oldImportMapValue === 'string') {
+        newFilesMap[node.themeFolder][node.name] = oldImportMapValue
+      }
+    }
+
+    // Persist prexisting snippet entries from @theme or other collections
+    if (node.type === 'snippet') {
+      const oldImportMapValue = oldFilesMap[node.themeFolder]?.[node.name]
+      const newImportMapValue = newFilesMap[node.themeFolder]?.[node.name]
+      if (newImportMapValue === undefined && oldImportMapValue !== collectionName && typeof oldImportMapValue === 'string') {
+        newFilesMap[node.themeFolder][node.name] = oldImportMapValue
+      }
     }
   }
 
