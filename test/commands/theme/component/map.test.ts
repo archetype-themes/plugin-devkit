@@ -76,6 +76,18 @@ describe('theme component map', () => {
     expect(data.files.snippets['include-tag.liquid']).to.equal('@theme') // Should work with include tag
   })
 
+  it('persists entries that are associated with @theme or another collection in the manifest', async () => {
+    const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
+    expect(beforeData.files.snippets['unreferenced-theme-snippet.liquid']).to.equal('@theme')
+    expect(beforeData.files.snippets['unreferenced-other-collection-snippet.liquid']).to.equal('@other/collection')
+
+    await runCommand(['theme', 'component', 'map', testThemePath])
+
+    const data = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
+    expect(data.files.snippets['unreferenced-theme-snippet.liquid']).to.equal('@theme')
+    expect(data.files.snippets['unreferenced-other-collection-snippet.liquid']).to.equal('@other/collection')
+  })
+
   it('adds entries for newly referenced components from current collection', async () => {
     const beforeData = JSON.parse(fs.readFileSync(path.join(testThemePath, 'component.manifest.json'), 'utf8'))
     expect(beforeData.files.snippets['new.liquid']).to.be.undefined
