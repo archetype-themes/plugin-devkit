@@ -7,7 +7,7 @@ import { LiquidNode } from './types.js'
 
 const LIQUID_BLOCK_REGEX = /{%-?.*?-?%}/gs
 const LIQUID_COMMENTS_REGEX = /{%-?\s*comment\s*-?%}[\S\s]*?{%-?\s*endcomment\s*-?%}/gi
-const LIQUID_RENDER_REGEX = /\s(?:render|include)\s+'([^']+)'/gs
+const LIQUID_RENDER_REGEX = /\s(?:include|render|inject)\s+'([^']+)'/gs
 const ASSET_URL_REGEX = /{{\s*'([^']+\.js)'\s*\|\s*asset_url\s*}}/g
 const SCRIPT_TAG_REGEX = /<script[^>]*>[\S\s]*?<\/script>/g
 const SCRIPT_IMPORT_REGEX = /import\s+["']([^"']+)["']/g
